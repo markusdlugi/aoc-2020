@@ -10,7 +10,7 @@ for line in lines:
     count = Counter(password)[letter]
     if a <= count <= b:
         valid_a += 1
-    if bool(password[a - 1] == letter) ^ bool(password[b - 1] == letter):
+    if (password[a - 1] == letter) ^ (password[b - 1] == letter):
         valid_b += 1
 print(valid_a)
 print(valid_b)
