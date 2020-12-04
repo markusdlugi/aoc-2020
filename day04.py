@@ -1,12 +1,28 @@
 import re
 
 
-def isnum(a):
-    try:
-        int(a)
+def in_range(value, a, b):
+    return a <= int(value) <= b
+
+
+def field_valid(key, value):
+    ranges = {'byr': (1920, 2002), 'iyr': (2010, 2020), 'eyr': (2020, 2030), 'cm': (150, 193), 'in': (59, 76)}
+    if key in ranges.keys():
+        return in_range(value, *ranges[key])
+    elif key == 'hgt':
+        unit, height = (value[-2:], value[:-2])
+        if unit not in ("cm", "in"):
+            return False
+        return in_range(height, *ranges[unit])
+    elif key == 'hcl':
+        return re.match(r'#[0-9a-f]{6}', value)
+    elif key == 'ecl':
+        return value in ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth')
+    elif key == 'pid':
+        return len(value) == 9
+    elif key == 'cid':
         return True
-    except ValueError:
-        return False
+    return True
 
 
 lines = [line.strip() for line in open("input/04.txt")]
@@ -27,64 +43,9 @@ passports.append(passport)
 mandatory = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid')
 
 # Part A
-valid = 0
-for passport in passports:
-    invalid = False
-    for m in mandatory:
-        if m not in passport:
-            invalid = True
-            break
-    if not invalid:
-        valid += 1
+valid = sum(all(m in passport for m in mandatory) for passport in passports)
 print(valid)
 
 # Part B
-valid = 0
-for passport in passports:
-    invalid = False
-    for m in mandatory:
-        try:
-            if m not in passport:
-                raise ValueError
-            elif m == 'byr':
-                byr = passport['byr']
-                if not isnum(byr) or int(byr) < 1920 or int(byr) > 2002:
-                    raise ValueError
-            elif m == 'iyr':
-                iyr = passport['iyr']
-                if not isnum(iyr) or int(iyr) < 2010 or int(iyr) > 2020:
-                    raise ValueError
-            elif m == 'eyr':
-                eyr = passport['eyr']
-                if not isnum(eyr) or int(eyr) < 2020 or int(eyr) > 2030:
-                    raise ValueError
-            elif m == 'hgt':
-                hgt = passport['hgt']
-                if hgt[-2:] not in ("cm", "in") or not isnum(hgt[:-2]):
-                    raise ValueError
-                unit = hgt[-2:]
-                value = int(hgt[:-2])
-                if unit == "cm":
-                    if value < 150 or value > 193:
-                        raise ValueError
-                elif unit == "in":
-                    if value < 59 or value > 76:
-                        raise ValueError
-            elif m == 'hcl':
-                hcl = passport['hcl']
-                matches = re.match(r'#[0-9a-f]{6}', hcl)
-                if not matches:
-                    raise ValueError
-            elif m == 'ecl':
-                ecl = passport['ecl']
-                if ecl not in ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'):
-                    raise ValueError
-            elif m == 'pid':
-                pid = passport['pid']
-                if not isnum(pid) or len(pid) != 9:
-                    raise ValueError
-        except ValueError:
-            break
-    else:
-        valid += 1
+valid = sum(all(m in passport and field_valid(m, passport[m]) for m in mandatory) for passport in passports)
 print(valid)
