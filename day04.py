@@ -2,7 +2,10 @@ import re
 
 
 def in_range(value, a, b):
-    return a <= int(value) <= b
+    try:
+        return a <= int(value) <= b
+    except ValueError:
+        return False
 
 
 def field_valid(key, value):
