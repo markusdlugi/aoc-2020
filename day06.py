@@ -1,21 +1,23 @@
-from collections import namedtuple
+with open("input/06.txt") as f:
+    groups = [group.splitlines() for group in f.read().split("\n\n")]
 
-lines = [line.strip() for line in open("input/06.txt")]
+# Iterative solution
+all_ = any_ = 0
+for group in groups:
+    all_questions = set()
+    any_questions = set()
+    for line in group:
+        if not any_questions:
+            all_questions.update(set(line))
+        else:
+            all_questions.intersection_update(set(line))
+        any_questions.update(set(line))
+    all_ += len(all_questions)
+    any_ += len(any_questions)
 
-groups = []
-sets = namedtuple("Sets", "any all")
-questions = sets(any=set(), all=set())
-for line in lines:
-    if line == "":
-        groups.append(questions)
-        questions = sets(any=set(), all=set())
-        continue
-    if not questions.any:
-        questions.all.update(set(list(line)))
-    else:
-        questions.all.intersection_update(set(list(line)))
-    questions.any.update(set(list(line)))
-groups.append(questions)
+print(any_)
+print(all_)
 
-print(sum(len(questions.any) for questions in groups))
-print(sum(len(questions.all) for questions in groups))
+# List comprehension magic
+print(sum(len(set.union(*map(set, group))) for group in groups))
+print(sum(len(set.intersection(*map(set, group))) for group in groups))
