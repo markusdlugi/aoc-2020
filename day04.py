@@ -28,21 +28,10 @@ def field_valid(key, value):
     return True
 
 
-lines = [line.strip() for line in open("input/04.txt")]
+with open("input/04.txt") as f:
+    lines = [" ".join(line.splitlines()) for line in f.read().split("\n\n")]
 
-passports = []
-passport = dict()
-for line in lines:
-    if line == "":
-        passports.append(passport)
-        passport = dict()
-        continue
-    fields = line.split()
-    for field in fields:
-        a, b = field.split(":")
-        passport[a] = b
-passports.append(passport)
-
+passports = [dict(field.split(":") for field in line.split()) for line in lines]
 mandatory = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid')
 
 # Part A
