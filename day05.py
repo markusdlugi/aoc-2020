@@ -1,5 +1,8 @@
+import re
+
 lines = [line.strip() for line in open("input/05.txt")]
 
+# First solution with binary search -.-
 rows = 128
 cols = 8
 
@@ -33,4 +36,19 @@ print(max_seat_id)
 for i in range(max_seat_id):
     if i - 1 in seats and i + 1 in seats and i not in seats:
         print(i)
+        break
+
+
+# Refined solution with converting to binary :)
+seats = []
+for line in lines:
+    line = re.sub(r'[BR]', '1', line)
+    line = re.sub(r'[FL]', '0', line)
+    seats.append(int(line, 2))
+seats.sort()
+print(seats[-1])
+
+for i in seats:
+    if i + 1 not in seats and i + 2 in seats:
+        print(i + 1)
         break
