@@ -1,41 +1,52 @@
-lines = [line.strip() for line in open("input/08.txt")]
+from copy import deepcopy
 
-changed = set()
-first_run = True
-while True:
-    accumulator = ip = 0
+
+def run_command(program, ip, acc):
+    command, arg = program[ip]
+    if command == "acc":
+        acc += int(arg)
+    elif command == "jmp":
+        ip += int(arg) - 1
+    elif command == "nop":
+        pass
+    ip += 1
+    return ip, acc
+
+
+def run_program(program, acc, print_on_loop):
+    ip = 0
     visited = {0}
-    curr_change = None
-    while ip < len(lines):
-        line = lines[ip]
-        command, arg = line.split()
+    while ip < len(program):
+        ip, acc = run_command(program, ip, acc)
 
-        # Change one line if we didn't yet this run
-        if not first_run and curr_change is None and command in ("jmp", "nop") and ip not in changed:
-            changed.add(ip)
-            curr_change = ip
-            command = "nop" if command == "jmp" else "jmp"
-
-        # Execute command
-        arg = int(arg)
-        if command == "acc":
-            accumulator += arg
-        elif command == "jmp":
-            ip += arg - 1
-        elif command == "nop":
-            pass
-        ip += 1
-
-        # Check if we've seen this IP already, then we're in a loop
         if ip not in visited:
             visited.add(ip)
         else:
-            # Part A: Result after first run where we hit a loop
-            if first_run:
-                print(accumulator)
-                first_run = False
-            break
+            if print_on_loop:
+                print(acc)
+            return False, ip, acc
+    return True, ip, acc
+
+
+program = [line.strip().split() for line in open("input/08.txt")]
+
+# Part A
+run_program(program, 0, True)
+
+# Part B
+i = 0
+program_copy = None
+while i < len(program):
+    command, arg = program[i]
+    if command in ("jmp", "nop"):
+        program_copy = deepcopy(program)
+        program_copy[i][0] = "nop" if command == "jmp" else "jmp"
     else:
-        # Part B: We terminated!
+        i += 1
+        continue
+
+    terminated, ip, acc = run_program(program_copy, 0, False)
+    if terminated:
+        print(acc)
         break
-print(accumulator)
+    i += 1
