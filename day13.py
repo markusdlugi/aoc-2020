@@ -22,18 +22,16 @@ lines = [line.strip() for line in open("input/13.txt")]
 
 depart = int(lines[0])
 times = lines[1].split(",")
-ids = sorted(list(map(int, filter(lambda x: x != "x", times))))
+ids = [int(x) for x in times if x != "x"]
 
 # Part A
-multiples = {}
-for id in ids:
-    m = id
-    while m < depart:
-        m += id
-    multiples[id] = m
+t = depart
+found = None
+while not found:
+    t += 1
+    found = [id for id in ids if t % id == 0]
 
-result = min(multiples, key=multiples.get)
-print((multiples[result] - depart) * result)
+print((t - depart) * found[0])
 
 # Part B
 modulos = []
