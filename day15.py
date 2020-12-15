@@ -5,7 +5,7 @@ lines = [line.strip() for line in open("input/15.txt")]
 
 numbers = [int(x) for x in lines[0].split(",")]
 
-D = {}
+D = [-1] * 30_000_000
 for i, num in enumerate(numbers):
     D[num] = i
 
@@ -15,7 +15,7 @@ for t in range(len(numbers), 30_000_000):
     if end1 is None and t == 2020:
         print(previous)
         end1 = timer()
-    new_previous = 0 if previous not in D else t - 1 - D[previous]
+    new_previous = 0 if D[previous] == -1 else t - 1 - D[previous]
     D[previous] = t - 1
     previous = new_previous
 
