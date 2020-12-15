@@ -9,14 +9,12 @@ D = {}
 for i, num in enumerate(numbers):
     D[num] = i
 
-t = len(numbers) - 1
 previous = numbers[-1]
 end1 = None
-while t < 30_000_000 - 1:
-    if end1 is None and t == 2020 - 1:
+for t in range(len(numbers), 30_000_000):
+    if end1 is None and t == 2020:
         print(previous)
         end1 = timer()
-    t += 1
     new_previous = 0 if previous not in D else t - 1 - D[previous]
     D[previous] = t - 1
     previous = new_previous
