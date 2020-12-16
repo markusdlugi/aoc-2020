@@ -1,9 +1,9 @@
 from collections import defaultdict
 
 with open("input/16.txt") as field:
-    groups = [group.splitlines() for group in field.read().split("\n\n")]
+    sections = [section.splitlines() for section in field.read().split("\n\n")]
 
-rules, your, nearby = groups
+rules, your, nearby = sections
 your = your[1:]
 nearby = nearby[1:]
 
@@ -19,8 +19,6 @@ for rule in rules:
 # Find invalid tickets
 invalid = []
 inv_tickets = []
-options = defaultdict(set)
-negative_options = defaultdict(set)
 for pos, t in enumerate(nearby):
     vals = [int(x) for x in t.split(",")]
 
@@ -38,6 +36,8 @@ for t in sorted(inv_tickets, reverse=True):
     del nearby[t]
 
 # Find options and negative options for fields
+options = defaultdict(set)
+negative_options = defaultdict(set)
 for pos, t in enumerate(nearby):
     vals = [int(x) for x in t.split(",")]
 
