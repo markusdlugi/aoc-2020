@@ -7,90 +7,76 @@ with open("input/19.txt") as field:
     sections = [section.splitlines() for section in field.read().split("\n\n")]
 
 rules = sections[0]
-msgs = sections[1]
+messages = sections[1]
 
 
-def build_rules(p2):
+def parse_rules():
     rule_map = defaultdict(list)
     for rule in rules:
-        if p2:
-            if rule.startswith("8:"):
-                rule = "8: 42 | 42 8"
-            elif rule.startswith("11:"):
-                rule = "11: 42 31 | 42 11 31"
         n, r = rule.split(": ")
         n = int(n)
         if "\"" in r:
             rule_map[n].append(r[1])
         elif "|" in r:
-            rs = r.split(" | ")
-            for x in rs:
-                rule_map[n].append(tuple(int(i) for i in x.split()))
+            rule_map[n].extend(tuple(int(i) for i in x.split()) for x in r.split(" | "))
         else:
             rule_map[n].append(tuple(int(i) for i in r.split()))
     return rule_map
 
 
-def build(rule_map, p2):
-    options = "^"
+rule_map = parse_rules()
+
+
+def build_regex(p2):
+    regex = "^"
     for i in rule_map[0][0]:
-        res = build_strings(i, rule_map, p2)
+        res = build_regex_for_rule(i, p2)
         if isinstance(res, list):
-            option = "("
-            option += "|".join(res)
-            option += ")"
-            options += option
+            regex += "(" + "|".join(res) + ")"
         else:
-            options += res
-    options += "$"
-    return options
+            regex += res
+    regex += "$"
+    return regex
 
 
-def build_strings(n, rule_map, p2):
-    r = rule_map[n]
-    if "a" in r or "b" in r:
-        return r[0]
+def build_regex_for_rule(n, p2):
+    rule = rule_map[n]
+    if "a" in rule or "b" in rule:
+        return rule[0]
     options = []
 
+    # Special rules for part 2
     if p2:
+        # Rule 8: Transform to (42)+
         if n == 8:
-            x = build_strings(r[0][0], rule_map, p2)
-            return "(" + "|".join(x) + ")+"
+            option = build_regex_for_rule(rule[0][0], p2)
+            return "(" + "|".join(option) + ")+"
+        # Rule 11: Transform to (42){1}(31){1}|(42){2}(31){2}|...
         elif n == 11:
-            parts = []
-            for i in r[0]:
-                parts.append("|".join(build_strings(i, rule_map, p2)))
+            parts = ["|".join(build_regex_for_rule(i, p2)) for i in rule[0]]
 
             options = []
-            for x in range(1, 10):
-                option = ""
-                for part in parts:
-                    option += "(" + part + "){" + str(x) + "}"
-                options.append(option)
+            for option in range(1, 5):
+                options.append("".join("(" + part + "){" + str(option) + "}" for part in parts))
             return "(" + "|".join(options) + ")"
 
-    for x in r:
-        result = ""
-        for i in x:
-            msg = build_strings(i, rule_map, p2)
-            subr = "("
-            if type(msg) == list:
-                subr += "|".join("".join(o) for o in msg)
-                subr += ")"
-                result += subr
+    for part in rule:
+        option = ""
+        for i in part:
+            regex = build_regex_for_rule(i, p2)
+            if isinstance(regex, list) and len(regex) > 1:
+                option += "(" + "|".join("".join(o) for o in regex) + ")"
             else:
-                result += "".join(msg)
-        options.append(result)
+                option += "".join(regex)
+        options.append(option)
     return options
 
 
-rule_map1 = build_rules(False)
-regex1 = build(rule_map1, False)
-print(sum(1 for m in msgs if re.match(regex1, m)))
+regex1 = build_regex(False)
+print(sum(1 for m in messages if re.match(regex1, m)))
 
-rule_map2 = build_rules(True)
-regex2 = build(rule_map1, True)
-print(sum(1 for m in msgs if re.match(regex2, m)))
+regex2 = build_regex(True)
+print(sum(1 for m in messages if re.match(regex2, m)))
 
 end = timer()
 print(f'Took {end - start} seconds.')
