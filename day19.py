@@ -28,15 +28,15 @@ rule_map = parse_rules()
 
 
 def build_regex(p2):
-    regex = "^"
+    result = "^"
     for i in rule_map[0][0]:
-        res = build_regex_for_rule(i, p2)
-        if isinstance(res, list):
-            regex += f"({'|'.join(res)})"
+        part = build_regex_for_rule(i, p2)
+        if isinstance(part, list):
+            result += f"({'|'.join(part)})"
         else:
-            regex += res
-    regex += "$"
-    return regex
+            result += part
+    result += "$"
+    return result
 
 
 def build_regex_for_rule(n, p2):
@@ -50,21 +50,20 @@ def build_regex_for_rule(n, p2):
         if n == 8:
             option = build_regex_for_rule(rule[0][0], p2)
             return f"({'|'.join(option)})+"
-        # Rule 11: Transform to (42){1}(31){1}|(42){2}(31){2}|...
+        # Rule 11: Transform to recursive subpattern (42)(11)?(31)
         elif n == 11:
             parts = ["|".join(build_regex_for_rule(i, p2)) for i in rule[0]]
-
             return f"(?P<rule11>({parts[0]})(?&rule11)?({parts[1]}))"
 
     result = []
     for part in rule:
         option = ""
         for i in part:
-            regex = build_regex_for_rule(i, p2)
-            if isinstance(regex, list) and len(regex) > 1:
-                option += f"({'|'.join(''.join(o) for o in regex)})"
+            part_regex = build_regex_for_rule(i, p2)
+            if isinstance(part_regex, list) and len(part_regex) > 1:
+                option += f"({'|'.join(''.join(o) for o in part_regex)})"
             else:
-                option += "".join(regex)
+                option += "".join(part_regex)
         result.append(option)
     return result
 
