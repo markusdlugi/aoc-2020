@@ -1,5 +1,5 @@
 from collections import defaultdict
-import re
+import regex
 from timeit import default_timer as timer
 
 start = timer()
@@ -32,7 +32,7 @@ def build_regex(p2):
     for i in rule_map[0][0]:
         res = build_regex_for_rule(i, p2)
         if isinstance(res, list):
-            regex += "(" + "|".join(res) + ")"
+            regex += f"({'|'.join(res)})"
         else:
             regex += res
     regex += "$"
@@ -43,40 +43,37 @@ def build_regex_for_rule(n, p2):
     rule = rule_map[n]
     if "a" in rule or "b" in rule:
         return rule[0]
-    options = []
 
     # Special rules for part 2
     if p2:
         # Rule 8: Transform to (42)+
         if n == 8:
             option = build_regex_for_rule(rule[0][0], p2)
-            return "(" + "|".join(option) + ")+"
+            return f"({'|'.join(option)})+"
         # Rule 11: Transform to (42){1}(31){1}|(42){2}(31){2}|...
         elif n == 11:
             parts = ["|".join(build_regex_for_rule(i, p2)) for i in rule[0]]
 
-            options = []
-            for option in range(1, 5):
-                options.append("".join("(" + part + "){" + str(option) + "}" for part in parts))
-            return "(" + "|".join(options) + ")"
+            return f"(?P<rule11>({parts[0]})(?&rule11)?({parts[1]}))"
 
+    result = []
     for part in rule:
         option = ""
         for i in part:
             regex = build_regex_for_rule(i, p2)
             if isinstance(regex, list) and len(regex) > 1:
-                option += "(" + "|".join("".join(o) for o in regex) + ")"
+                option += f"({'|'.join(''.join(o) for o in regex)})"
             else:
                 option += "".join(regex)
-        options.append(option)
-    return options
+        result.append(option)
+    return result
 
 
 regex1 = build_regex(False)
-print(sum(1 for m in messages if re.match(regex1, m)))
+print(sum(1 for m in messages if regex.match(regex1, m)))
 
 regex2 = build_regex(True)
-print(sum(1 for m in messages if re.match(regex2, m)))
+print(sum(1 for m in messages if regex.match(regex2, m)))
 
 end = timer()
 print(f'Took {end - start} seconds.')
