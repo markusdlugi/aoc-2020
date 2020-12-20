@@ -20,6 +20,7 @@ for tile in tiles:
 
 width = x + 1
 height = y + 1
+dx, dy = ((0, 1, 0, -1), (-1, 0, 1, 0))
 
 
 def get_borders(tilemap, width, height):
@@ -47,9 +48,6 @@ def rot(clockwise, tilemap, width, height):
         new_y = (-x - 1) % width if clockwise else x
         result[(new_x, new_y)] = ch
     return result
-
-
-dx, dy = ((0, 1, 0, -1), (-1, 0, 1, 0))
 
 
 def aligns(a, b):
@@ -114,7 +112,7 @@ while q:
     a, b = q.popleft()
     if b in arranged:
         continue
-    for i, b_map in enumerate(get_transformations(tilemap[b], width, height)):
+    for b_map in get_transformations(tilemap[b], width, height):
         border = aligns(tilemap[a], b_map)
         if border != -1:
             x, y = (arranged[a][0] + dx[border], arranged[a][1] + dy[border])
