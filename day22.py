@@ -20,7 +20,7 @@ def combat(player1, player2, recursive):
             player2.clear()
             player1.append(0)
         else:
-            seen_rounds.add((tuple(player1), tuple(player2)))
+            seen_rounds.add(round_)
 
             c1 = player1.popleft()
             c2 = player2.popleft()
@@ -47,7 +47,7 @@ def score(deck):
 
 _, winning_deck = combat(player1.copy(), player2.copy(), False)
 print(score(winning_deck))
-_, winning_deck = combat(player1.copy(), player2.copy(), True)
+_, winning_deck = combat(player1, player2, True)
 print(score(winning_deck))
 
 end = timer()
