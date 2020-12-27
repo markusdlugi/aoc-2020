@@ -113,7 +113,7 @@ def eval_line_with_crazy_stack_logic(line, p2):
     return int(result)
 
 
-result1 = [eval_line_with_crazy_stack_logic(line, False) for line in lines]
-result2 = [eval_line_with_crazy_stack_logic(line, True) for line in lines]
-print(sum(result1))
-print(sum(result2))
+#result1 = [eval_line_with_crazy_stack_logic(line, False) for line in lines]
+#result2 = [eval_line_with_crazy_stack_logic(line, True) for line in lines]
+#print(sum(result1))
+#print(sum(result2))
