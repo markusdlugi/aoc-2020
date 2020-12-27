@@ -1,4 +1,3 @@
-from llist import dllist
 from timeit import default_timer as timer
 
 start = timer()
@@ -6,24 +5,24 @@ puzzle = int(open("input/23.txt").read())
 
 
 def solve(p2):
-    lookup = dict()
-    cups = dllist()
-    for x in str(puzzle):
-        node = cups.append(int(x))
-        lookup[int(x)] = node
+    digits = str(puzzle)
+    n = len(digits) if not p2 else 1_000_000
+    cups = [0] * (n + 1)
+    for i, x in enumerate(digits):
+        next_ = int(digits[(i + 1) % len(digits)])
+        cups[int(x)] = next_
 
     if p2:
-        for x in range(10, 1_000_000 + 1):
-            node = cups.append(x)
-            lookup[x] = node
+        cups[int(x)] = len(digits) + 1
+        for x in range(len(digits) + 1, n + 1):
+            cups[x] = x + 1 if x < n else int(digits[0])
 
     max_number = max(cups)
+    current_cup = int(digits[0])
     for i in range(10_000_000 if p2 else 100):
-        current_cup = cups.popleft()
-        picked_up = [cups.popleft(), cups.popleft(), cups.popleft()]
+        picked_up = [cups[current_cup], cups[cups[current_cup]], cups[cups[cups[current_cup]]]]
 
-        node = cups.appendleft(current_cup)
-        lookup[current_cup] = node
+        cups[current_cup] = cups[picked_up[-1]]
 
         destination = current_cup - 1
         while destination in picked_up or destination < 1:
@@ -31,24 +30,22 @@ def solve(p2):
             if destination < 1:
                 destination = max_number
 
-        insert_node = lookup[destination].next
-        for cup in picked_up:
-            node = cups.insert(cup, insert_node)
-            lookup[cup] = node
+        cups[picked_up[-1]] = cups[destination]
+        cups[destination] = picked_up[0]
 
-        node = cups.append(cups.popleft())
-        lookup[current_cup] = node
+        current_cup = cups[current_cup]
 
     if p2:
-        one_node = lookup[1]
-        one_after = one_node.next
-        two_after = one_after.next
-        return one_after.value * two_after.value
+        one_after = cups[1]
+        two_after = cups[cups[1]]
+        return one_after * two_after
     else:
-        while cups[0] != 1:
-            cups.append(cups.popleft())
-        cups.popleft()
-        return "".join(str(x) for x in cups)
+        curr = 1
+        result = []
+        while cups[curr] != 1:
+            curr = cups[curr]
+            result.append(curr)
+        return "".join(str(x) for x in result)
 
 
 print(solve(False))
