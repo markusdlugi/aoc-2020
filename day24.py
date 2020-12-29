@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from functools import lru_cache
 
 lines = [line.strip() for line in open("input/24.txt")]
 
@@ -18,9 +19,12 @@ G = set([k for k, v in tiles.items() if v % 2 == 1])
 print(len(G))
 
 
+@lru_cache(maxsize=None)
 def neighbours(x, y, z):
+    result = []
     for i in range(6):
-        yield (x + dx[i], y + dy[i], z + dz[i])
+        result.append((x + dx[i], y + dy[i], z + dz[i]))
+    return result
 
 
 def count_active(G, pos):
@@ -33,19 +37,17 @@ def count_active(G, pos):
 
 def simulate(G):
     for i in range(100):
-        new_G = G.copy()
-
-        changeset = set()
+        new_G = set()
+        changeset = set(G)
         for pos in G:
-            changeset.add(pos)
             changeset.update(neighbours(*pos))
 
         for pos in changeset:
             state = "#" if pos in G else "."
             adj_count = count_active(G, pos)
-            if state == "#" and (adj_count > 2 or adj_count == 0):
-                new_G.remove(pos)
-            if state == "." and adj_count == 2:
+            if state == "#" and not (adj_count > 2 or adj_count == 0):
+                new_G.add(pos)
+            elif state == "." and adj_count == 2:
                 new_G.add(pos)
         G = new_G
     return G
