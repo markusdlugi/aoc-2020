@@ -1,17 +1,17 @@
 pubkeys = [int(line.strip()) for line in open("input/25.txt")]
 
 
-def transform(num, loop=None, pubkey=None):
+def transform(base, pubkey):
     curr = 1
-    for i in range(100000000 if loop is None else loop):
-        curr *= num
+    for i in range(1, 20201227):
+        curr *= base
         curr %= 20201227
-        if loop is None and curr == pubkey:
-            return i + 1
+        if curr == pubkey:
+            return i
     else:
         return curr
 
 
-loop_size = transform(7, pubkey=pubkeys[0])
-encryption_key = transform(pubkeys[1], loop=loop_size)
+loop_size = transform(7, pubkeys[0])
+encryption_key = pow(pubkeys[1], loop_size, 20201227)
 print(encryption_key)
