@@ -1,38 +1,36 @@
 import re
-from collections import deque
-
-import networkx as nx
-from networkx import NetworkXNoPath
+from collections import deque, defaultdict
+from functools import lru_cache
 
 lines = [line.strip() for line in open("input/07.txt")]
 
-G = nx.DiGraph()
+bags = defaultdict(list)
 for line in lines:
     container = re.findall(r'([a-z ]*) bags contain', line)[0]
-    bags = re.findall(r'(\d+) ([a-z ]*) bag[s]?[,.]?', line[len(container) + 13:])
-    for num, bag in bags:
-        num = int(num)
-        G.add_edge(container, bag, weight=num)
+    bags[container].extend((int(num), bag) for num, bag in re.findall(r'(\d+) ([a-z ]*) bag[s]?[,.]?', line[len(container) + 13:]))
 
 # Part A
-target = "shiny gold"
-paths = []
-for source in G.nodes:
-    if source == target:
-        continue
-    try:
-        path = list(nx.all_shortest_paths(G, source=source, target=target))
-        paths.append(path)
-    except NetworkXNoPath:
-        continue
-print(len(paths))
+found = set()
+
+
+@lru_cache(maxsize=10000)
+def find_shiny_gold(bag):
+    if bag == "shiny gold":
+        return True
+    if any(find_shiny_gold(bag) for (num, bag) in bags[bag]):
+        found.add(bag)
+        return True
+    return False
+
+
+for bag in list(bags.keys()):
+    find_shiny_gold(bag)
+print(len(found))
+
 
 # Part B
-q = deque([(target, 1)])
-bag_count = 0
-while q:
-    curr, count = q.popleft()
-    bag_count += count
-    for _, bag in G.out_edges([curr]):
-        q.append((bag, count * G.edges[curr, bag]["weight"]))
-print(bag_count - 1)
+def count_bags(bag, count):
+    return count + count * sum(count_bags(b, n) for (n, b) in bags[bag])
+
+
+print(count_bags("shiny gold", 1) - 1)
